@@ -22,7 +22,7 @@ jobs:
         with:
           push: true
           platforms: linux/amd64
-          tags: rg.fr-par.scw.cloud/diabdata-api/relay:latest
+          tags: rg.fr-par.scw.cloud/diabdata-api/diabdata-api:latest
 
       - name: Deploy new version
         run: |
