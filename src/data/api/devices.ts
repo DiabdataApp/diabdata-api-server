@@ -1,7 +1,7 @@
 import type { MedicalDevice } from "../../types/api/medical_devices";
 import type { DeviceType } from "../../types/api/medical_devices/device_type";
 
-export async function getMedicalDeviceRegistry(): Promise<
+async function getMedicalDeviceRegistry(): Promise<
   Map<string, MedicalDevice>
 > {
   const content = await Bun.file("assets/medical_devices.csv").text();
@@ -32,3 +32,5 @@ export async function getMedicalDeviceRegistry(): Promise<
 
   return map;
 }
+
+export const deviceRegistry = await getMedicalDeviceRegistry();

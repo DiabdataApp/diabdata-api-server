@@ -31,3 +31,5 @@ export async function getMedicationRegistry(): Promise<
 
   return map;
 }
+
+export const medicationRegistry = await getMedicationRegistry();

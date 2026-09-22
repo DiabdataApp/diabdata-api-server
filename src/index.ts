@@ -1,11 +1,15 @@
 import { randomUUIDv7 } from "bun";
 import { registry } from "./registry";
-import { WsRoleType, type WsData } from "./types/wsDataType";
+import { WsRoleType, type WsData } from "./types/relay/wsDataType";
 import {
   ErrorType,
   MessageType,
   SessionInterruptionType,
-} from "./types/messages";
+} from "./types/relay/messages";
+import { getMedicalDeviceInfos } from "./routes/devices";
+import type { MedicalDevice } from "./types/api/medical_devices";
+import { getMedicationInfo } from "./routes/medications";
+import type { Medication } from "./types/api/medication";
 
 const server = Bun.serve<WsData>({
   port: 8080,
@@ -13,6 +17,30 @@ const server = Bun.serve<WsData>({
     const url = new URL(req.url);
     if (url.pathname === "/health") {
       return Response.json(registry.stats());
+    } else if (url.pathname.startsWith("/api/devices/")) {
+      const GTIN = url.pathname.split("/")[3];
+
+      if (!GTIN) return Response.json("Missing Gtin", { status: 404 });
+
+      const device: MedicalDevice | undefined = getMedicalDeviceInfos(GTIN);
+      if (device == undefined)
+        return Response.json("This GTIN was not found in the device registry", {
+          status: 404,
+        });
+
+      return Response.json(device, { status: 200 });
+    } else if (url.pathname.startsWith("/api/treatments/")) {
+      const GTIN = url.pathname.split("/")[3];
+
+      if (!GTIN) return Response.json("Missing Gtin", { status: 404 });
+
+      const medication: Medication | undefined = getMedicationInfo(GTIN);
+      if (medication == undefined)
+        return Response.json("This GTIN was not found in the treatments registry", {
+          status: 404,
+        });
+
+      return Response.json(medication, { status: 200 });
     } else if (url.pathname === "/ws/app") {
       server.upgrade(req, {
         data: {
@@ -20,6 +48,7 @@ const server = Bun.serve<WsData>({
           clientId: undefined,
         },
       });
+      return;
     } else if (url.pathname === "/ws/client") {
       let clientId = randomUUIDv7();
       server.upgrade(req, {
@@ -28,6 +57,7 @@ const server = Bun.serve<WsData>({
           clientId: clientId,
         },
       });
+      return;
     } else {
       return Response.error();
     }
