@@ -59,7 +59,7 @@ const server = Bun.serve<WsData>({
       });
       return;
     } else {
-      return Response.error();
+      return new Response("Not Found", { status: 404 });
     }
   },
   websocket: {
