@@ -1,6 +1,6 @@
 import type { ServerWebSocket } from "bun";
-import { MessageType, SessionInterruptionType, type SessionClosedMessage, type SessionInterruptionTypes, type SharingMode } from "./types/messages";
-import type { WsData } from "./types/wsDataType";
+import { MessageType, SessionInterruptionType, type SessionClosedMessage, type SessionInterruptionTypes, type SharingMode } from "./types/relay/messages";
+import type { WsData } from "./types/relay/wsDataType";
 
 export interface Session {
     sessionId: string;

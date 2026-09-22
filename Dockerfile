@@ -5,10 +5,11 @@ WORKDIR /app
 
 # Import package json and bun lock for dependancies
 COPY package.json bun.lock ./
-RUN bun install
+RUN bun install --frozen-lockfile
 
 # Import code
 COPY src/ ./src/
+COPY assets/ ./assets/
 
 EXPOSE 8080
 
