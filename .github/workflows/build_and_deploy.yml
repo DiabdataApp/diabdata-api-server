@@ -6,11 +6,19 @@ on:
   repository_dispatch:
     types: [data-updated]
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          fetch-tags: true
 
       - name: Fetch latest data from diabdata-registry
         run: |
@@ -20,22 +28,52 @@ jobs:
           curl -s -o assets/medication_data.csv \
             https://raw.githubusercontent.com/DiabdataApp/diabdata-registry/main/medication_data.csv
 
+      - name: Determine version tag
+        id: version
+        if: github.event_name == 'push'
+        run: |
+          today=$(date +%Y.%m.%d)
+          n=1
+          while git rev-parse -q --verify "refs/tags/${today}-${n}" > /dev/null; do
+            n=$((n + 1))
+          done
+          echo "tag=${today}-${n}" >> "$GITHUB_OUTPUT"
+
+      - name: Determine image tags
+        id: image_tags
+        run: |
+          image="rg.fr-par.scw.cloud/diabdata-api/diabdata-api"
+          {
+            echo "tags<<EOF"
+            echo "${image}:latest"
+            if [ "${{ github.event_name }}" = "push" ]; then
+              echo "${image}:${{ steps.version.outputs.tag }}"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Login to Scaleway Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: rg.fr-par.scw.cloud
           username: nologin
           password: ${{ secrets.SCW_SECRET_KEY }}
 
       - name: Build and push image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           push: true
           platforms: linux/amd64
-          tags: rg.fr-par.scw.cloud/diabdata-api/diabdata-api:latest
+          tags: ${{ steps.image_tags.outputs.tags }}
 
       - name: Deploy new version
         run: |
           curl -s -X POST \
             -H "X-Auth-Token: ${{ secrets.SCW_SECRET_KEY }}" \
             "https://api.scaleway.com/containers/v1/regions/fr-par/containers/${{ secrets.SCW_CONTAINER_ID }}/deploy"
+
+      - name: Create and push version tag
+        if: github.event_name == 'push'
+        run: |
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
