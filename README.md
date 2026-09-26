@@ -2,6 +2,7 @@
 
 ![GitHub contributors](https://img.shields.io/github/contributors/DiabdataApp/diabdata-api-server?color=blue&label=CONTRIBUTORS)
 ![Build Status](https://img.shields.io/github/actions/workflow/status/DiabdataApp/diabdata-api-server/build_and_deploy.yml?label=Build%20%26%20Deploy)
+![CodeQL](https://img.shields.io/github/actions/workflow/status/DiabdataApp/diabdata-api-server/github-code-scanning/codeql?label=CodeQL)
 ![GitHub top language](https://img.shields.io/github/languages/top/DiabdataApp/diabdata-api-server)
 
 <!-- PROJECT LOGO -->
